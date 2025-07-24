@@ -1,0 +1,57 @@
+data:
+  batch_sampler: none
+  filter_breed: ggs
+  init_stop_snps: ./none
+  mit_flag: 0
+  oversample_ratio: 1.5
+  stop_snps: ./data/search_stop_snp.rm.rm_info.epoch33
+  train_data: ./data/3.7k_snp.pickle.train
+
+
+train_param:
+  cuda: cuda:0
+  model_flag: Dcn
+  batch_size: 32
+  epoch: 15
+  lr: 0.001
+  weight_decay: 0.01
+  regular_weight: 0.0001
+  print_global_step: 60  
+  early_stopping_patience: 5  
+  early_stopping_delta: 0.005
+  save_dir: ./result/model_checkpoint
+  test_flag: false
+  
+  optimizer: "adamw"  # options: adamw, adam, sgd
+  momentum: 0.9  # for SGD
+  
+  loss_fn: "focal"  # options: cross_entropy, focal
+  label_smoothing: 0.1  # for CrossEntropyLoss
+  focal_alpha: 0.9  # for FocalLoss
+  focal_gamma: 1.5 # for FocalLoss
+  
+
+  scheduler:
+    type: "onecycle"  # options: step, cosine, plateau, onecycle
+    factor: 0.5  
+    patience: 3   
+    min_lr: 1e-6 
+    # for StepLR
+    step_size: 10
+    gamma: 0.1
+    # for CosineAnnealingLR
+    t_max: 50
+    eta_min: 1e-5
+    # for OneCycleLR
+    max_lr: 0.01
+    total_steps: 100
+    pct_start: 0.3
+    final_div_factor: 1000
+    # for Plateau
+    mode: "max"  # monitoring F1  
+
+utils:
+  checkpoint: ./result/model_checkpoint
+  logger_file: ./result/process.log
+  logging_level: 11
+  model_dir : ./result/
