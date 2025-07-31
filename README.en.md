@@ -69,7 +69,7 @@ python script_v2.0/rdc_classify_test.py \
 Step 1: Prepare Training Data
 ```bash
 # Convert VCF to pickle format
-python script_v2.0/rjf_sample_feat_parse_new.py \
+python script_v2.0/rjf_sample_feat_parse.py \
   --method parse_vcf \
   --vcf_file your_full.vcf \
   --sample_2_group_file breed_labels.txt \
@@ -78,7 +78,7 @@ python script_v2.0/rjf_sample_feat_parse_new.py \
 
 ```
 # Split dataset (80% train, 20% test)
-python script_v2.0/rjf_sample_feat_parse_new.py \
+python script_v2.0/rjf_sample_feat_parse.py \
   --method split_train_test \
   --data_file training_data.pickle
 ```
