@@ -220,8 +220,11 @@ Sample2     RJF   # Wild relatives, represents positive samples
 
 ```
 3.7k_snp.vcf.gz: Raw VCF file used for training the Red Jungle Fowl (RJF) identification model.
+
 5k.snp.Asian_only.new.vcf.gz: Raw VCF file used for training the wild boar identification model.
+
 Breeds_and_group.information_chickens.txt: Label information for Red Jungle Fowl and domestic chicken breeds.
+
 Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domestic pig breeds.
 ```
 
