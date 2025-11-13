@@ -1,17 +1,16 @@
 
 # Deep_SNP_Screen_and_RJF_identification （DeepSNP&RJF-ID）
 
+DeepSNP&RJF-ID is a tool designed for the molecular identification of Red Jungle Fowl (RJF). It first samples the chicken’s genotype at approximately 300 specified SNPs and then analyzes this data through an AI model within the tool to determine whether the chicken is a true Red Jungle Fowl.
 
-DeepSNP&RJF-ID is a tool for molecular identification of Red Jungle Fowl (RJF). Sample the genotype of the chicken to be identified on the specified SNPs (~700) and input it into the AI ​​model in the tool to get the identification result of whether it is a red jungle fowl.
+In addition to providing a trained identification model, DeepSNP&RJF-ID also includes the complete training workflow, which comprises the following steps:
 
-In addition to providing the trained identification model, the tool also provides the entire training process code. The whole process includes
+1. Training Data Preparation: Parsing sample VCF files and attaching corresponding label information.
+2. SNP Refinement: Employing computational perturbation experiments to identify SNPs with high information content and strong discriminatory power.
+3. Model Training: Training a new identification model from scratch.
+4. Model Qualification and Testing: Using the built-in interface to validate and evaluate the trained model.
 
-1. Training data preparation: parse the sample VCF file and join label information.
-2. SNP fine screening: Use computer perturbation experiments to screen SNPs with high information content and high contribution to identification.
-3. Identification model training: train a new model from scratch
-4. Qualification model testing: Use the interface of the qualification model.
-
-In addition to the molecular identification of red junglefowl, the tool can also be used for the molecular identification of other species.
+Although designed specifically for Red Jungle Fowl identification, DeepSNP&RJF-ID can also be adapted for the molecular identification of other species.
 
 
 <p align="center">
