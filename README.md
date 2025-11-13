@@ -204,7 +204,7 @@ python script_v2.0/rdc_classify_test.py \
 ```
 
 ### Important Notes
-Label Requirements
+1. Label Requirements
 
 For non-RJF species, maintain these labels in your breed info file:
 
@@ -212,6 +212,17 @@ For non-RJF species, maintain these labels in your breed info file:
 SampleID    Group
 Sample1     DC    # Domestic animals, represents negative samples
 Sample2     RJF   # Wild relatives, represents positive samples
+```
+
+2. The raw scripts are also provided in the 'scripts' directory for reference.
+
+### Data Information
+
+```
+3.7k_snp.vcf.gz: Raw VCF file used for training the Red Jungle Fowl (RJF) identification model.
+5k.snp.Asian_only.new.vcf.gz: Raw VCF file used for training the wild boar identification model.
+Breeds_and_group.information_chickens.txt: Label information for Red Jungle Fowl and domestic chicken breeds.
+Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domestic pig breeds.
 ```
 
 ### Contributors
