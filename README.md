@@ -16,7 +16,7 @@ In addition to the molecular identification of red junglefowl, the tool can also
 
 <p align="center">
 
-<img src="https://github.com/icefire080/Deep_SNP_screen_and_RJF_identification/blob/main/docs/main_1.png" width="900" height="280">
+<img src="https://github.com/icefire080/Deep_SNP_screen_and_RJF_identification/blob/main/docs/Figure1.png" width="900" height="280">
 
 </p>
 
