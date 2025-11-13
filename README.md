@@ -204,8 +204,8 @@ python script_v2.0/rdc_classify_test.py \
 ```
 
 ### Important Notes
-1. Label Requirements
 
+Label Requirements
 For non-RJF species, maintain these labels in your breed info file:
 
 ```
@@ -213,8 +213,6 @@ SampleID    Group
 Sample1     DC    # Domestic animals, represents negative samples
 Sample2     RJF   # Wild relatives, represents positive samples
 ```
-
-2. The raw scripts are also provided in the 'scripts' directory for reference.
 
 ### Data Information
 
