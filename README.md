@@ -97,7 +97,7 @@ train_param:
  batch_size : 5
  model_flag : Dcn # options for architectures: Snp_dnn_simple, Snp_dnn_lr, Dfm, main, Snp_transform, Dcn, Snp_dnn_2_layer, Snp_dnn_4_layer
  regular_weight : 0.0
- cuda : cuda:1 # GPU
+ cuda : cuda:0 # Set up the GPU
 
 snp_search_train_param:
  epoch : 30
