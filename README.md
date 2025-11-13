@@ -15,7 +15,7 @@ Although designed specifically for Red Jungle Fowl identification, DeepSNP&RJF-I
 
 <p align="center">
 
-<img src="https://github.com/icefire080/Deep_SNP_screen_and_RJF_identification/blob/main/docs/Figure1.png" width="500" height="900">
+<img src="https://github.com/icefire080/Deep_SNP_screen_and_RJF_identification/blob/main/docs/Figure1.png" width="900" height="1600">
 
 </p>
 
