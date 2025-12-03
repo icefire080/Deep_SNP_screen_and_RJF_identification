@@ -85,7 +85,13 @@ python script_v2.0/rjf_sample_feat_parse.py \
 Step 2: SNP Panel Optimization
 ```bash
 # Create config file
-echo "data:
+echo "utils: 
+ logging_level : INFO
+ model_dir : ./
+ logger_file : ./process.log
+ test_flag : false
+ checkpoint : ./model_checkpoint
+data:
  train_data : rawdataset/3.7k_snp.pickle.train # input pickle file
  mit_flag : 0 # for mitochondrial lables, keep it as 0
  stop_snps : ./dcn/search_stop_snp.rm_info.epoch10 # epoch for stoping list
