@@ -263,7 +263,6 @@ Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domest
 | Scheduler factor / patience / min_lr | 0.5 / 3 / 1e-6 | Controls how much/when LR is reduced and the minimum LR. | Very small min_lr can stall; too large factor can be abrupt. | If LR drops too often, increase patience; if never drops, decrease patience. | Config value. |
 | Early stopping patience | 5 | Stops training if validation does not improve for this many epochs. | Too small: stops early; too large: overfits/wastes compute. | Start 5~10; if validation is noisy, increase a bit. | Prechelt 1998. |
 | Early stopping delta | 0.001 | Minimum improvement needed to count as progress. | Too large: premature stop; too small: trains on noise. | Start 0.001~0.01 (for F1 scale); 0.005 is practical. | Config value. |
-| Seeds / repeated runs (recommended) | ≥3 runs | Repeat training to quantify variability. | Single-run results can be lucky/unlucky. | Train 3~5 seeds; report mean ± SD of F1/AUC. | Recommended for applied decisions. |
 
 ## References
 
