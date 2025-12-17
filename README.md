@@ -234,49 +234,46 @@ Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domest
 
 # Reference for Model Architecture and Hyperparameter Selection
 
+## Table S5a. Model comparison.
 
-## Table S1A. Model comparison (MLP/DCN/DeepFM/Self-attention)
+| Model | Core mechanism | Genetic signal captured (expected) | Pros | Cons / caveats | Interpretability / how to report | When it works best / failure modes | Data & compute needs | Key references |
+|---|---|---|---|---|---|---|---|---|
+| MLP (Multilayer Perceptron) | Feedforward network with fully-connected layers + nonlinear activations. | Nonlinear effects and higher-order interactions (implicit). | Flexible decision boundary; can capture complex multi-locus patterns. | Overfitting risk; sensitive to architecture/regularization; harder to interpret. | Moderate: needs post-hoc explanations (e.g., SHAP/permutation); not a direct map to causality. | Best with sufficient n and regularization; may fail with small n/high p or confounding stratification leakage. | Medium compute; benefits from GPU; higher data needs than LR. | Sheehan & Song 2016; Schrider & Kern 2018; Lundberg & Lee 2017 |
+| DCN (Deep & Cross Network) | Cross layers explicitly construct bounded-degree feature interactions + deep network. | Low–moderate order SNP interactions plus nonlinear patterns. | Parameter-efficient interaction modeling; often stable for interaction signals. | Interaction order limited by #cross layers; interpretability still limited vs LR. | Moderate: structured interactions, but linking to biological epistasis requires care. | Best when modest-order SNP combinations matter; may fail for very high-order dependencies or too-small training sets. | Medium compute; tune cross-depth. | Wang et al. 2017; Schrider & Kern 2018 (context) |
+| DFM / DeepFM | FM models pairwise interactions; deep part models higher-order nonlinear patterns end-to-end. | Pairwise + higher-order interactions among SNPs. | Balances efficiency (pairwise) and expressivity (deep); reduces manual interaction features. | More components to tune; can overfit without regularization; limited interpretability. | Moderate: pairwise part is closer to interaction intuition; global explanations usually post-hoc (e.g., SHAP). | Best when both low- and high-order interactions contribute; may fail with confounding, limited n, or poorly tuned embeddings. | Medium–high compute depending on embedding/depth; GPU helpful. | Guo et al. 2017; Schrider & Kern 2018; Lundberg & Lee 2017 |
+| SA (Self-attention) | Attention adaptively re-weights/aggregates features; captures dependencies across features. | Distributed polygenic patterns; long-range dependencies. | Adaptive feature weighting; can highlight informative SNP sets; good for distributed signals. | Compute overhead; attention maps are heuristic; may be unstable with small n/noisy genotypes. | Potential: attention maps + SHAP-like tools; interpret as importance heuristics, not causal loci. | Best when signal is spread across many SNPs; may fail by overfitting confounding structure if n is small. | High compute relative to LR; careful regularization; GPU recommended. | Vaswani et al. 2017; Sheehan & Song 2016 (context); Lundberg & Lee 2017 |
+| DFM-SA-MLP (fusion model; this study) | SNPs are encoded as tokens → embedding. Three parallel branches are computed: (1) DeepFM/DFM captures pairwise (FM) + higher-order (deep) interactions; (2) self-attention learns context-dependent feature weighting/dependencies (Q/K/V attention); (3) MLP learns general nonlinear decision boundaries. Branch outputs are fused by summation (or weighted fusion) and mapped to class probabilities via Softmax. | Additive + interaction-driven signals (pairwise to higher-order epistasis-like patterns) and distributed polygenic patterns where many SNPs collectively contribute; can also leverage long-range dependencies across loci in the learned representation. | - | - | - | - | Medium–high compute; benefits from GPU; usually needs more data than LR for stable generalization; strong regularization + early stopping recommended. | DeepFM (Guo et al., 2017); Self-attention/Transformer (Vaswani et al., 2017); DL in population genetics context (Sheehan & Song, 2016; Schrider & Kern, 2018); model-interpretation tools (Lundberg & Lee, 2017) |
 
-| Model | Core mechanism | Genetic signal captured (expected) | Strengths | Limitations | Key architecture hyperparameters (typical) | Key reference |
-|---|---|---|---|---|---|---|
-| MLP (Multilayer Perceptron) | Feedforward neural network with fully-connected layers and nonlinear activations. | Nonlinear SNP effects and higher-order interactions (implicit). | Flexible decision boundaries; can approximate complex genotype→class mappings. | May overfit; sensitive to architecture, regularization, and sample size. | Depth (#layers), width (#neurons), activation, dropout, batch norm. | Goodfellow et al. 2016 |
-| DCN (Deep & Cross Network) | Cross layers explicitly construct bounded-degree feature crosses; combined with a deep network. | Efficient low-to-moderate order feature interactions (explicit crossing). | Captures interactions with fewer parameters than very deep MLPs; often stable. | Interaction order limited by #cross layers; may miss very complex interactions. | #cross layers, deep depth/width, hidden size, dropout. | Wang et al. 2017 (DCN) |
-| DFM / DeepFM | FM part models pairwise interactions; deep part models higher-order nonlinear patterns; trained end-to-end. | Both low-order (pairwise) and higher-order interactions among SNPs. | Balances efficiency (FM) and expressivity (deep); avoids manual feature engineering. | More components to tune; interpretability limited compared with LR. | Embedding dimension (FM), deep depth/width, dropout, activation. | Guo et al. 2017 (DeepFM) |
-| SA (Self-attention) | Computes attention weights to re-weight/aggregate feature representations; captures dependencies across features. | Distributed signals; long-range dependencies; context-dependent feature importance. | Adaptive weighting; can provide attention scores as heuristic importance. | More compute; attention patterns can be hard to interpret biologically without care. | #heads, attention/hidden dim, #layers, dropout, positional encoding choice. | Vaswani et al. 2017 |
+## Table S5b. Hyperparameters and tuning guide
 
-## Table S1B. Training, optimization, and imbalance-handling hyperparameters 
-
-| Item | Value used | What it is | Why it matters | Typical range / notes |
-|---|---|---|---|---|
-| Batch size | 32 | Individuals per gradient update. | Affects gradient noise, speed, generalization. | 16~128 |
-| Epochs | 15 | Upper bound on training passes through data. | Controlled with early stopping to avoid overfitting. | 10~200 |
-| Optimizer | AdamW | Adaptive optimizer with decoupled weight decay. | Often improves generalization vs. Adam+L2 coupling. | Adam / AdamW / SGD |
-| Learning rate | 0.001 | Step size of parameter updates. | Most sensitive; too high diverges, too low underfits. | 1e-4~1e-2 (log-scale) |
-| Weight decay (optimizer) | 0.01 | Optimizer-level weight decay applied during updates (AdamW: decoupled). | Regularizes all trainable parameters; stabilizes training. | 0~0.05 |
-| Embedding regularization weight (regular_weight) | 0.0001 | Coefficient for an extra regularization term computed on the SNP embedding table (parameter name: emb.weight). The term is ∑_rows ||w_i||₂ (L2,1 / row-norm sum). | Encourages group-wise sparsity/selection over SNP-embedding rows; applied only if emb.weight exists; otherwise skipped. | 0~1e-3 (study-dependent) |
-| LR scheduler | ReduceLROnPlateau (type=plateau) | Reduces LR when monitored validation metric plateaus. | Helps refine convergence after stagnation. | Other scheduler params may exist in config but are inactive when type=plateau. |
-| Scheduler factor | 0.5 | Multiply LR by factor when plateau detected. | Smaller factor = stronger LR drop. | 0.1~0.8 |
-| Scheduler patience | 3 | Epochs without improvement before reducing LR. | Prevents premature LR drops. | 2~10 |
-| Minimum LR | 1e-6 | Lower bound for LR after reductions. | Avoids LR becoming too small. | 1e-8~1e-5 |
-| Plateau mode / monitor | mode="max" (monitor F1) | Direction for improvement and monitored metric for Plateau scheduler. | Ensures LR is reduced when validation F1 stops improving. | If monitoring AUC instead, report that explicitly. |
-| Early stopping delta | 0.001 | Minimum improvement to be considered progress. | Controls sensitivity to small metric changes. | 1e-4~1e-2 |
-| Early stopping patience | 5 | Epochs to wait before stopping if no progress. | Stops before overfitting; improves reproducibility. | 3~20 |
-| Loss | Focal loss | Re-weights easy vs. hard examples; addresses imbalance. | Useful under class imbalance; focuses hard samples. | CE / weighted CE / focal |
-| Focal loss α | 0.9 | Class weighting (up-weights minority class). | Higher α increases minority-class emphasis. | 0.5~0.95 |
-| Focal loss γ | 1.5 | Focusing parameter (down-weights easy examples). | Higher γ increases focus on hard samples. | 0~3 |
-| Label smoothing (inactive here) | 0.1 | Smoothing factor for CrossEntropyLoss only (not used when loss_fn='focal'). | Reduces overconfidence under CE; ignored in focal-loss runs. | 0~0.2 |
-| Momentum (inactive here) | 0.9 | Momentum for SGD only (not used when optimizer='adamw'). | Can accelerate SGD; ignored in Adam/AdamW runs. | 0~0.95 |
+| Hyperparameter (plain name) | Value used in this study | What it does (plain language) | If set too high / too low, what you typically see | A simple tuning recipe (what to try first) | Notes / citations |
+|---|---|---|---|---|---|
+| Batch size | 32 | How many individuals are processed before one parameter update. | Too large: poorer generalization / memory issues; too small: noisy/slow training. | Try 16, 32, 64; choose largest that fits memory without hurting validation. | Config value. |
+| Epochs | 15 (with early stopping) | Maximum passes through training data. | Too low: underfitting; too high without early stopping: overfitting. | Set upper bound and rely on early stopping; 15 was sufficient here. | Early stopping controls effective epochs. |
+| Learning rate (lr) | 0.001 | How big each training step is. | Too high: divergence/oscillation; too low: very slow, may underfit. | Tune first on a log grid: 1e-4, 3e-4, 1e-3, 3e-3, 1e-2; pick best validation metric with stable training. | Often the most sensitive setting. |
+| Optimizer | AdamW | Update rule; AdamW is a stable default for deep models. | SGD often needs careful LR/momentum tuning. | Start with AdamW; only switch if needed. | AdamW: Loshchilov & Hutter 2019. |
+| Weight decay (optimizer) | 0.01 | Mild shrinkage applied during optimization to reduce overfitting (applies to all parameters). | Too high: underfit; too low: overfit (train high, val drops). | After lr, tune 0, 1e-4, 1e-3, 1e-2, 5e-2; pick best validation. | Decoupled in AdamW. |
+| Embedding regularization (regular_weight) | 0.0001 | Extra penalty on SNP embedding table 'emb.weight': ∑_rows ||w_i||₂ (L2,1 row-norm sum), encouraging group-wise sparsity (some rows shrink). | Too high: ignores useful SNP embeddings; too low: embeddings may overfit noise. | Tune 1e-5~1e-3 on log grid. If the model has no 'emb.weight', this term is skipped. | Group-lasso idea: Yuan & Lin 2006. |
+| Loss function | Focal loss | Training objective; focal loss helps when classes are imbalanced by focusing on hard examples. | If imbalance is mild, may not help; if γ too large, training can be unstable. | Start with focal loss under imbalance; compare to (weighted) cross-entropy baseline. | Focal loss: Lin et al. 2017. |
+| Focal loss α (alpha) | 0.9 | Up-weights the minority class in the loss. | Too high: more false positives; too low: misses minority class (low recall). | Try 0.5, 0.7, 0.9, 0.95; choose based on conservation goal (recall vs precision). | Controls sensitivity vs specificity. |
+| Focal loss γ (gamma) | 1.5 | How strongly the loss focuses on misclassified (hard) samples. | Too high: noisy/unstable; too low: similar to cross-entropy. | Try 0, 1, 1.5, 2, 3; reduce if unstable. | Controls focusing strength. |
+| Oversampling ratio | 1.5 | Repeats minority-class individuals during training to reduce imbalance. | Too high: overfit duplicates; too low: minority underrepresented. | Try 1.0, 1.5, 2.0; choose by validation F1/recall. | Complements focal loss. |
+| Learning-rate scheduler | ReduceLROnPlateau (type=plateau) | Reduces LR when validation metric stops improving. | Too aggressive: stalls early; too mild: prolonged plateau. | Use plateau when unsure of schedule; start with factor 0.5 and patience 2~5. | PyTorch ReduceLROnPlateau. |
+| Plateau monitor / mode | monitor validation F1, mode="max" | Tells the scheduler what to watch and whether higher is better. | Monitoring the wrong metric triggers LR drops at wrong times. | Choose one primary metric (F1 for imbalance; AUC for ranking) and monitor it consistently. | Config comment indicates F1. |
+| Scheduler factor / patience / min_lr | 0.5 / 3 / 1e-6 | Controls how much/when LR is reduced and the minimum LR. | Very small min_lr can stall; too large factor can be abrupt. | If LR drops too often, increase patience; if never drops, decrease patience. | Config value. |
+| Early stopping patience | 5 | Stops training if validation does not improve for this many epochs. | Too small: stops early; too large: overfits/wastes compute. | Start 5~10; if validation is noisy, increase a bit. | Prechelt 1998. |
+| Early stopping delta | 0.001 | Minimum improvement needed to count as progress. | Too large: premature stop; too small: trains on noise. | Start 0.001~0.01 (for F1 scale); 0.005 is practical. | Config value. |
+| Seeds / repeated runs (recommended) | ≥3 runs | Repeat training to quantify variability. | Single-run results can be lucky/unlucky. | Train 3~5 seeds; report mean ± SD of F1/AUC. | Recommended for applied decisions. |
 
 ## References
 
-- **Goodfellow et al. 2016**: Goodfellow I, Bengio Y, Courville A. Deep Learning. MIT Press; 2016.
-- **Wang et al. 2017 (DCN)**: Wang R, Fu B, Fu G, Wang M. Deep & Cross Network for Ad Click Predictions. ADKDD@KDD; 2017.
-- **Guo et al. 2017 (DeepFM)**: Guo H, Tang R, Ye Y, Li Z, He X. DeepFM: A Factorization-Machine based Neural Network for CTR Prediction. IJCAI; 2017.
-- **Vaswani et al. 2017**: Vaswani A, Shazeer N, Parmar N, et al. Attention Is All You Need. NeurIPS; 2017.
-- **Loshchilov & Hutter 2019**: Loshchilov I, Hutter F. Decoupled Weight Decay Regularization (AdamW). ICLR; 2019.
-- **Lin et al. 2017**: Lin T-Y, Goyal P, Girshick R, He K, Dollár P. Focal Loss for Dense Object Detection. ICCV; 2017.
-- **Prechelt 1998**: Prechelt L. Automatic early stopping using cross-validation: quantifying the criteria. Neural Networks. 1998;11(4):761–767.
-- **PyTorch ReduceLROnPlateau**: PyTorch documentation: torch.optim.lr_scheduler.ReduceLROnPlateau (accessed 2025).
+- [Schrider & Kern 2018] Schrider DR, Kern AD. Supervised Machine Learning for Population Genetics: A New Paradigm. Trends Genet. 2018.
+- [Sheehan & Song 2016] Sheehan S, Song YS. Deep Learning for Population Genetic Inference. PLoS Comput Biol. 2016;12(3):e1004845.
+- [Loshchilov & Hutter 2019] Loshchilov I, Hutter F. Decoupled Weight Decay Regularization (AdamW). ICLR. 2019.
+- [Lin et al. 2017] Lin T-Y, Goyal P, Girshick R, He K, Dollár P. Focal Loss for Dense Object Detection. ICCV. 2017.
+- [Prechelt 1998] Prechelt L. Automatic early stopping using cross-validation: quantifying the criteria. Neural Networks. 1998;11(4):761–767.
+- [Yuan & Lin 2006] Yuan M, Lin Y. Model Selection and Estimation in Regression with Grouped Variables. JRSSB. 2006;68(1):49–67.
+
 
 ### Contributors
 Primary Developer: Bei Liu (bei_liu_go@163.com)
