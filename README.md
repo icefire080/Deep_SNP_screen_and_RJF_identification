@@ -267,15 +267,6 @@ Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domest
 | Label smoothing (inactive here) | 0.1 | Smoothing factor for CrossEntropyLoss only (not used when loss_fn='focal'). | Reduces overconfidence under CE; ignored in focal-loss runs. | 0~0.2 |
 | Momentum (inactive here) | 0.9 | Momentum for SGD only (not used when optimizer='adamw'). | Can accelerate SGD; ignored in Adam/AdamW runs. | 0~0.95 |
 
-## Table S1C. Data and feature-selection settings 
-
-| Item | Value used | What it is | Why it matters | Notes |
-|---|---|---|---|---|
-| Oversampling ratio | 1.5 | Oversample minority class during training data loading. | Mitigates class imbalance alongside focal loss. | Study-dependent |
-| Filter breed | ggs | Subset/filter training data by breed label. | Controls population composition used for training. | Study-dependent |
-| Stop SNP list | ./data/search_stop_snp.epoch33 | List of SNPs to exclude (e.g., to build a reduced panel). | Defines feature set used for training/testing. | Path from config |
-| Train data path | ./data/3.7k_snp.pickle.train | Serialized training dataset. | Reproducibility (data versioning). | Path from config |
-
 ## References
 
 - **Goodfellow et al. 2016**: Goodfellow I, Bengio Y, Courville A. Deep Learning. MIT Press; 2016.
