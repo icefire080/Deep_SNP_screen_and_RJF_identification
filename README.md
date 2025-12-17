@@ -232,13 +232,13 @@ Breeds_and_group.information_chickens.txt: Label information for Red Jungle Fowl
 Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domestic pig breeds.
 ```
 
-# Details of architectures and hyperparameters
+# Reference for Model Architecture and Hyperparameter Selection
 
 ## Table S1A. Model comparison (MLP/DCN/DeepFM/Self-attention)
 
 | Model | Core mechanism | Genetic signal captured (expected) | Strengths | Limitations | Key architecture hyperparameters (typical) | Key reference |
 |---|---|---|---|---|---|---|
-| MLP (feedforward neural network) | Stacked fully-connected layers with nonlinear activations. | Nonlinear SNP effects and higher-order interactions (implicit). | Flexible decision boundaries; can approximate complex genotype→class mappings. | May overfit; sensitive to architecture, regularization, and sample size. | Depth (#layers), width (#neurons), activation, dropout, batch norm. | Goodfellow et al. 2016 |
+| MLP (feedforward neural network/Multilayer Perceptron) | Stacked fully-connected layers with nonlinear activations. | Nonlinear SNP effects and higher-order interactions (implicit). | Flexible decision boundaries; can approximate complex genotype→class mappings. | May overfit; sensitive to architecture, regularization, and sample size. | Depth (#layers), width (#neurons), activation, dropout, batch norm. | Goodfellow et al. 2016 |
 | DCN (Deep & Cross Network) | Parallel ‘cross’ layers explicitly construct bounded-degree feature crosses; combined with deep network. | Efficient low-to-moderate order feature interactions (explicit crossing). | Captures interactions with fewer parameters than very deep MLPs; often stable. | Interaction order limited by #cross layers; may miss very complex interactions. | #cross layers, deep depth/width, embedding/hidden size, dropout. | Wang et al. 2017 (DCN) |
 | DFM / DeepFM | Factorization Machine part models pairwise interactions; deep part models higher-order nonlinear patterns; trained end-to-end. | Both low-order (pairwise) and higher-order interactions among SNPs. | Balances efficiency (FM) and expressivity (deep); less manual feature engineering. | More components to tune; interpretability limited compared with LR. | Embedding dimension (FM), deep depth/width, dropout, activation. | Guo et al. 2017 (DeepFM) |
 | SA (Self-attention) | Computes attention weights to re-weight and combine feature representations; captures dependencies across input positions/features. | Distributed signals; long-range dependencies; context-dependent feature importance. | Adaptive weighting; can provide attention scores as heuristic importance. | More compute; attention patterns can be hard to interpret biologically without care. | #heads, attention/hidden dim, #layers, dropout, positional encoding choice. | Vaswani et al. 2017 |
