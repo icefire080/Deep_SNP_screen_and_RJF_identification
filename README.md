@@ -259,7 +259,7 @@ Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domest
 | Scheduler patience | 3 | Epochs without improvement before reducing LR. | Prevents premature LR drops. | 2–10 |
 | Minimum LR | 1e-6 | Lower bound for LR after reductions. | Avoids LR becoming too small. | 1e-8–1e-5 |
 | Plateau mode / monitor | mode="max" (monitor F1) | Direction for improvement and monitored metric for Plateau scheduler. | Ensures LR is reduced when validation F1 stops improving. | If monitoring AUC instead, report that explicitly. |
-| Early stopping delta | 0.005 | Minimum improvement to be considered progress. | Controls sensitivity to small metric changes. | 1e-4–1e-2 |
+| Early stopping delta | 0.001 | Minimum improvement to be considered progress. | Controls sensitivity to small metric changes. | 1e-4–1e-2 |
 | Early stopping patience | 5 | Epochs to wait before stopping if no progress. | Stops before overfitting; improves reproducibility. | 3–20 |
 | Loss | Focal loss | Re-weights easy vs. hard examples; addresses imbalance. | Useful under class imbalance; focuses hard samples. | CE / weighted CE / focal |
 | Focal loss α | 0.9 | Class weighting (up-weights minority class). | Higher α increases minority-class emphasis. | 0.5–0.95 |
