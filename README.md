@@ -232,6 +232,50 @@ Breeds_and_group.information_chickens.txt: Label information for Red Jungle Fowl
 Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domestic pig breeds.
 ```
 
+# Details of architectures and hyperparameters
+
+## Table S1A. Model comparison (MLP/DCN/DeepFM/Self-attention)
+
+| Model | Core mechanism | Genetic signal captured (expected) | Strengths | Limitations | Key architecture hyperparameters (typical) | Key reference |
+|---|---|---|---|---|---|---|
+| MLP (feedforward neural network) | Stacked fully-connected layers with nonlinear activations. | Nonlinear SNP effects and higher-order interactions (implicit). | Flexible decision boundaries; can approximate complex genotype→class mappings. | May overfit; sensitive to architecture, regularization, and sample size. | Depth (#layers), width (#neurons), activation, dropout, batch norm. | Goodfellow et al. 2016 |
+| DCN (Deep & Cross Network) | Parallel ‘cross’ layers explicitly construct bounded-degree feature crosses; combined with deep network. | Efficient low-to-moderate order feature interactions (explicit crossing). | Captures interactions with fewer parameters than very deep MLPs; often stable. | Interaction order limited by #cross layers; may miss very complex interactions. | #cross layers, deep depth/width, embedding/hidden size, dropout. | Wang et al. 2017 (DCN) |
+| DFM / DeepFM | Factorization Machine part models pairwise interactions; deep part models higher-order nonlinear patterns; trained end-to-end. | Both low-order (pairwise) and higher-order interactions among SNPs. | Balances efficiency (FM) and expressivity (deep); less manual feature engineering. | More components to tune; interpretability limited compared with LR. | Embedding dimension (FM), deep depth/width, dropout, activation. | Guo et al. 2017 (DeepFM) |
+| SA (Self-attention) | Computes attention weights to re-weight and combine feature representations; captures dependencies across input positions/features. | Distributed signals; long-range dependencies; context-dependent feature importance. | Adaptive weighting; can provide attention scores as heuristic importance. | More compute; attention patterns can be hard to interpret biologically without care. | #heads, attention/hidden dim, #layers, dropout, positional encoding choice. | Vaswani et al. 2017 |
+
+## Table S1B. Training and optimization hyperparameters
+
+| Item | Value used in this study | What it is | Why it matters | Typical range / notes |
+|---|---:|---|---|---|
+| Batch size | 32 | Individuals per gradient update. | Affects gradient noise, speed, generalization. | 16–128 |
+| Max epochs | 15 | Upper bound on training passes through data. | Controlled with early stopping to avoid overfitting. | 10–200 |
+| Optimizer | AdamW | Adaptive optimizer with decoupled weight decay. | Often improves generalization vs. Adam+L2 coupling. | Adam / AdamW / SGD |
+| Learning rate | 0.001 | Step size of parameter updates. | Most sensitive; too high diverges, too low underfits. | 1e-4–1e-2 (log-scale) |
+| Weight decay | 0.01 | Decoupled shrinkage on weights (AdamW). | Regularizes and stabilizes training. | 0–0.05 |
+| L2 regularization weight | 0.0001 | Additional penalty term (if used in loss). | Controls parameter magnitude; reduces overfitting. | 0–1e-3 |
+| LR scheduler | ReduceLROnPlateau | Reduces LR when validation metric plateaus. | Helps refine convergence after stagnation. | Factor 0.1–0.8; patience 2–10 |
+| Scheduler factor | 0.5 | Multiply LR by factor when plateau detected. | Smaller factor = stronger LR drop. | 0.1–0.8 |
+| Scheduler patience | 3 | Epochs without improvement before reducing LR. | Prevents premature LR drops. | 2–10 |
+| Minimum LR | 1e-6 | Lower bound for LR after reductions. | Avoids LR becoming too small. | 1e-8–1e-5 |
+| Early stopping delta | 0.001 | Minimum improvement to be considered progress. | Controls sensitivity to small metric changes. | 1e-4–1e-2 |
+| Early stopping patience | 5 | Epochs to wait before stopping if no progress. | Stops before overfitting; improves reproducibility. | 3–20 |
+| Loss | Focal loss | Re-weights easy vs. hard examples; addresses imbalance. | Useful under class imbalance; focuses hard samples. | CE / weighted CE / focal |
+| Focal loss α | 0.9 | Class weighting (up-weights minority class). | Higher α increases minority-class emphasis. | 0.5–0.95 |
+| Focal loss γ | 1.5 | Focusing parameter (down-weights easy examples). | Higher γ increases focus on hard samples. | 0–3 |
+| Repeated runs | 5 | Independent training runs with different random seeds. | Quantifies training variability. | 3–10 |
+| Missingness stress test | 5%–50% (step 5%), 20 repeats | Randomly mask SNPs to simulate missing genotypes. | Evaluates robustness to incomplete genotyping. | Study-dependent |
+
+## References
+
+- **Goodfellow et al. 2016**: Goodfellow I, Bengio Y, Courville A. Deep Learning. MIT Press; 2016.
+- **Wang et al. 2017 (DCN)**: Wang R, Fu B, Fu G, Wang M. Deep & Cross Network for Ad Click Predictions. ADKDD@KDD; 2017.
+- **Guo et al. 2017 (DeepFM)**: Guo H, Tang R, Ye Y, Li Z, He X. DeepFM: A Factorization-Machine based Neural Network for CTR Prediction. IJCAI; 2017.
+- **Vaswani et al. 2017**: Vaswani A, Shazeer N, Parmar N, et al. Attention Is All You Need. NeurIPS; 2017.
+- **Loshchilov & Hutter 2019**: Loshchilov I, Hutter F. Decoupled Weight Decay Regularization (AdamW). ICLR; 2019.
+- **Lin et al. 2017**: Lin T-Y, Goyal P, Girshick R, He K, Dollár P. Focal Loss for Dense Object Detection. ICCV; 2017.
+- **Prechelt 1998**: Prechelt L. Automatic early stopping using cross-validation: quantifying the criteria. Neural Networks. 1998;11(4):761–767.
+- **PyTorch ReduceLROnPlateau**: PyTorch documentation: torch.optim.lr_scheduler.ReduceLROnPlateau (accessed 2025).
+
 ### Contributors
 Primary Developer: Bei Liu (bei_liu_go@163.com)
 
