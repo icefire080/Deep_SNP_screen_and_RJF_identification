@@ -230,11 +230,13 @@ Sample2     RJF   # Wild relatives, represents positive samples
 Breeds_and_group.information_chickens.txt: Label information for Red Jungle Fowl and domestic chicken breeds.
 
 Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domestic pig breeds.
+
+215-SNP_Panel_Pig.txt: The information of 215-SNP panel for wild boar identificaiton model.
 ```
 
 # Reference for Model Architecture and Hyperparameter Selection
 
-## Table S5a. Model comparison.
+## Table S2a. Model comparison.
 
 | Model | Core mechanism | Genetic signal captured (expected) | Pros | Cons / caveats | Interpretability / how to report | When it works best / failure modes | Data & compute needs | Key references |
 |---|---|---|---|---|---|---|---|---|
@@ -244,7 +246,7 @@ Breed_info_Asian_pigs_only.txt: Label information for wild boar and Asian domest
 | SA (Self-attention) | Attention adaptively re-weights/aggregates features; captures dependencies across features. | Distributed polygenic patterns; long-range dependencies. | Adaptive feature weighting; can highlight informative SNP sets; good for distributed signals. | Compute overhead; attention maps are heuristic; may be unstable with small n/noisy genotypes. | Potential: attention maps + SHAP-like tools; interpret as importance heuristics, not causal loci. | Best when signal is spread across many SNPs; may fail by overfitting confounding structure if n is small. | High compute relative to LR; careful regularization; GPU recommended. | Vaswani et al. 2017; Sheehan & Song 2016 (context); Lundberg & Lee 2017 |
 | DFM-SA-MLP (fusion model; this study) | SNPs are encoded as tokens → embedding. Three parallel branches are computed: (1) DeepFM/DFM captures pairwise (FM) + higher-order (deep) interactions; (2) self-attention learns context-dependent feature weighting/dependencies (Q/K/V attention); (3) MLP learns general nonlinear decision boundaries. Branch outputs are fused by summation (or weighted fusion) and mapped to class probabilities via Softmax. | Additive + interaction-driven signals (pairwise to higher-order epistasis-like patterns) and distributed polygenic patterns where many SNPs collectively contribute; can also leverage long-range dependencies across loci in the learned representation. | - | - | - | - | Medium–high compute; benefits from GPU; usually needs more data than LR for stable generalization; strong regularization + early stopping recommended. | DeepFM (Guo et al., 2017); Self-attention/Transformer (Vaswani et al., 2017); DL in population genetics context (Sheehan & Song, 2016; Schrider & Kern, 2018); model-interpretation tools (Lundberg & Lee, 2017) |
 
-## Table S5b. Hyperparameters and tuning guide
+## Table S2b. Hyperparameters and tuning guide
 
 | Hyperparameter (plain name) | Value used in this study | What it does (plain language) | If set too high / too low, what you typically see | A simple tuning recipe (what to try first) | Notes / citations |
 |---|---|---|---|---|---|
