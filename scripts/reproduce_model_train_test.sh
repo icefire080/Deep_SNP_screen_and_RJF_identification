@@ -19,8 +19,8 @@ checkpoint=$exp_dir/model_checkpoint
 
 echo "--begin to trian model"
 
-python dg_rdg/rdc_identify_model.py  --method train_with_stop_snp  --conf $config_file 
+python script_v2.0/rdc_identify_model.py  --method train_with_stop_snp  --conf $config_file 
 
 echo "----begin identify moddel test------"
 
-python dg_rdg/rdc_classify_test.py --checkpoint $checkpoint --data $test_data --snp_mark_file $snp_mark_file --test_result_file $test_result_file --logger_file $logger_file 
+python script_v2.0/rdc_classify_test.py --checkpoint $checkpoint --data $test_data --snp_mark_file $snp_mark_file --test_result_file $test_result_file --logger_file $logger_file 
