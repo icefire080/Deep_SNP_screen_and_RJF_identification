@@ -202,11 +202,11 @@ python script_v2.0/rdc_identify_model.py \
 Step 4: Validate Model
 ```bash
 python script_v2.0/rdc_classify_test.py \
-  --checkpoint ./trained_model/model_checkpoint \
-  --data training_data.pickle.test \
-  --snp_mark_file final_snp_panel.txt \
-  --test_result_file validation_results.txt \
-  --logger_file validation.log
+  --checkpoint ./trained_model/model_checkpoint \  # Input: Trained model from the previous step.
+  --data training_data.pickle.test \               # Input: Testing dataset in pickle format.
+  --snp_mark_file final_snp_panel.txt \            # Output: Selected SNP panel information.
+  --test_result_file validation_results.txt \      # Output: Predicted probabilities for test individuals. 
+  --logger_file validation.log                     # Output: Log file for the prediction run.
 ```
 
 ### Important Notes
