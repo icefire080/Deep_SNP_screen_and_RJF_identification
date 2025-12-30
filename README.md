@@ -57,7 +57,7 @@ python script_v2.0/rjf_sample_feat_parse.py \
 Step 3: Run Identification
 ```bash
 python script_v2.0/rdc_classify_test.py \
-  --checkpoint identification_model/RJF/model_checkpoint \ # Input: RJF identification model(download from trained model folder of this web).
+  --checkpoint identification_model/RJF/model_checkpoint \ # Input: RJF identification model (download from 'trained_model' folder of this web).
   --logger_file identification.log \                       # Output: log file.
   --data your.GT.pickle \                                  # Input: pickel file from last step.
   --test_result_file prediction_results.txt \              # Output: Predicted probabilities for test individuals
