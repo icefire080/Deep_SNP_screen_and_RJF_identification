@@ -45,23 +45,23 @@ vcftools --gzvcf your.vcf.gz \
 mv your.GT.recode.vcf your.GT.vcf
 ```
 
-Step 2: Convert to Pickle Format
+Step 2: Convert vcf file to Pickle Format
 ```bash
 python script_v2.0/rjf_sample_feat_parse.py \
   --method parse_vcf \
-  --vcf_file your.GT.vcf \
-  --data_file your.GT.pickle \
+  --vcf_file your.GT.vcf \      # Input: vcf file
+  --data_file your.GT.pickle \  # Output: pickel file
   --mock_group 1
 ```
 
 Step 3: Run Identification
 ```bash
 python script_v2.0/rdc_classify_test.py \
-  --checkpoint identification_model/RJF/model_checkpoint \
-  --logger_file identification.log \
-  --data your.GT.pickle \
-  --test_result_file prediction_results.txt \
-  --mock_y 1
+  --checkpoint identification_model/RJF/model_checkpoint \ # Input: RJF identification model(download from trained model folder of this web).
+  --logger_file identification.log \                       # Output: log file.
+  --data your.GT.pickle \                                  # Input: pickel file from last step.
+  --test_result_file prediction_results.txt \              # Output: Predicted probabilities for test individuals
+  --mock_y 1                                               # presuppose lable, if you dont know, keep it.
 ```
 
 ### Train Custom Model
@@ -70,16 +70,16 @@ Step 1: Prepare Training Data
 # Convert VCF to pickle format
 python script_v2.0/rjf_sample_feat_parse.py \
   --method parse_vcf \
-  --vcf_file your_full.vcf \
-  --sample_2_group_file breed_labels.txt \
-  --data_file training_data.pickle
+  --vcf_file your_full.vcf \                  # Input: vcf file
+  --sample_2_group_file breed_labels.txt \    # Input: individual labels information.
+  --data_file All_data.pickle                 # Output: pickel file
 ```
 
 ```
 # Split dataset (80% train, 20% test)
-python script_v2.0/rjf_sample_feat_parse.py \
+python script_v2.0/rjf_sample_feat_parse.py \ # In this step, you will obtain two files with the suffixes ".train" and ".test".
   --method split_train_test \
-  --data_file training_data.pickle
+  --data_file training_data.pickle            # Input: pickel file from last step.
 ```
 
 Step 2: SNP Panel Optimization
@@ -92,20 +92,20 @@ echo "utils:
  test_flag : false
  checkpoint : ./model_checkpoint
 data:
- train_data : rawdataset/3.7k_snp.pickle.train # input pickle file
- mit_flag : 0 # for mitochondrial lables, keep it as 0
- stop_snps : ./dcn/search_stop_snp.rm_info.epoch10 # epoch for stoping list
- snp_select_model_filter_breed : ggs #in case reporting an error, please keep it
+ train_data : rawdataset/3.7k_snp.pickle.train            # Input: train data pickle file from last step.
+ mit_flag : 0                                             # For mitochondrial lables, keep it as 0.
+ stop_snps : ./dcn/search_stop_snp.rm_info.epoch10        # Output: epoch for stoping list, each file. 
+ snp_select_model_filter_breed : ggs                      # In case reporting an error, please keep it.
 
-train_param:
+train_param:                                              # How to set please refer to Table S2b as below.
  epoch : 64
  lr : 0.001 #learning rate
  batch_size : 5
- model_flag : Dcn # options for architectures: Snp_dnn_simple, Snp_dnn_lr, Dfm, main, Snp_transform, Dcn, Snp_dnn_2_layer, Snp_dnn_4_layer
+ model_flag : Dcn                                         # Options for architectures, how to set please refer to Table S2a as below.
  regular_weight : 0.0
- cuda : cuda:0 # Set up the GPU
+ cuda : cuda:0                                            # Set up the GPU.
 
-snp_search_train_param:
+snp_search_train_param:                                   # How to set please refer to Table S2b as below.
  epoch : 30
  lr : 0.005
  batch_size : 64
@@ -116,35 +116,35 @@ snp_search_train_param:
  cpu : False
 
 snp_search:
- mask_diff_base_model_auc_th : 0.88 #
- max_find_epoch : 62 #max find epoch
- mask_diff_th : 0.96 #difference threshold
- find_step : 100 # steps for SNP removing 
- target_snp_cnt : 300 # target SNP panel size
- result_remove_snp : ./dcn/search_stop_snp #stoping list of each steps
- test_flag : false " > snp_config.yml
+ mask_diff_base_model_auc_th : 0.88                      # Base model AUC threshold.
+ max_find_epoch : 62                                     # Max find epoch.
+ mask_diff_th : 0.96                                     # Difference threshold.
+ find_step : 100                                         # Steps for SNP removing.
+ target_snp_cnt : 300                                    # Target SNP panel size.
+ result_remove_snp : ./dcn/search_stop_snp               # Stoping list of each iteration.
+ test_flag : false " > snp_config.yml                    # Output: config file for SNP selection.
 ```
 
 ```
 # Run screening
-mkdir snp_selection
+mkdir snp_selection                                     # Output: the directory of stoping lists of each iteration
 python script_v2.0/mask_2.py \
   --method mask_weight \
-  --conf snp_config.yml
+  --conf snp_config.yml                                 # Input: config file for SNP selection.
 ```
 
 Step 3: Train Identification Model
 ```bash
 # Create training config
 echo "data:
-  batch_sampler: none # keep it
-  filter_breed: ggs # keep it
-  init_stop_snps: ./none # keep it
-  mit_flag: 0 
+  batch_sampler: none                                  # Keep it
+  filter_breed: ggs                                    # Keep it
+  init_stop_snps: ./none                               # Keep it
+  mit_flag: 0                                          # Keep it
   oversample_ratio: 1.5 
-  stop_snps: ./data/search_stop_snp.epoch33 #stoping list for 285-SNP panel
-  train_data: ./data/3.7k_snp.pickle.train #traning data
-train_param:
+  stop_snps: ./data/search_stop_snp.epoch33            # Input: stoping list from 'snp_selection' directory 
+  train_data: ./data/3.7k_snp.pickle.train             # Input: traning data
+train_param:                                           # How to set please refer to Table S2b as below.
   cuda: cuda:0
   model_flag: Dcn
   batch_size: 32
@@ -155,22 +155,22 @@ train_param:
   print_global_step: 60  
   early_stopping_patience: 5  
   early_stopping_delta: 0.005
-  save_dir: ./result/model_checkpoint # path to model
+  save_dir: ./result/model_checkpoint                  # Path to trained model
   test_flag: false
   
-  optimizer: "adamw"  # options: adamw, adam, sgd
-  momentum: 0.9  # for SGD
+  optimizer: "adamw"                                   # options: adamw, adam, sgd
+  momentum: 0.9                                        # For SGD
   
-  loss_fn: "focal"  # options: cross_entropy, focal
-  label_smoothing: 0.1  # for CrossEntropyLoss
-  focal_alpha: 0.9  # for FocalLoss
-  focal_gamma: 1.5 # for FocalLoss
+  loss_fn: "focal"                                     # Options: cross_entropy, focal
+  label_smoothing: 0.1                                 # For CrossEntropyLoss
+  focal_alpha: 0.9                                     # For FocalLoss
+  focal_gamma: 1.5                                     # For FocalLoss
   
   scheduler:
-    type: "plateau"  # options: step, cosine, plateau, onecycle
+    type: "plateau"                                    # Options: step, cosine, plateau, onecycle
     factor: 0.5  
     patience: 3   
-    min_lr: 1e-6  # minimum learning rate
+    min_lr: 1e-6                                       # Minimum learning rate
     # for StepLR
     step_size: 10
     gamma: 0.1
@@ -183,12 +183,12 @@ train_param:
     pct_start: 0.3
     final_div_factor: 1000
     # for Plateau
-    mode: "max"  # monitoring F1  
+    mode: "max"                                      # Monitoring F1  
 utils:
-  checkpoint: ./result/model_checkpoint # path to model
-  logger_file: ./result/process.log # log file
+  checkpoint: ./result/model_checkpoint              # Output: Path to model
+  logger_file: ./result/process.log                  # Output: log file
   logging_level: 11
-  model_dir : ./result/ # the path for the final model" > train_config.yml
+  model_dir : ./result/" > train_config.yml          # Output: config file for model training.
 ```
 
 ```
@@ -196,7 +196,7 @@ utils:
 mkdir trained_model
 python script_v2.0/rdc_identify_model.py \
   --method train_with_stop_snp \
-  --conf train_config.yml
+  --conf train_config.yml                          # Input: config file for model training
 ```
 
 Step 4: Validate Model
